@@ -1,0 +1,24 @@
+{% set job = item.0.key %}
+{% set input_dir = item.1 %}
+{% set input_dir_sanitised = item.1 | regex_replace('^\\/', '') | regex_replace('/', '_') %}
+[global]
+{% for o in fio_global_options | dict2items %}
+{{ o.key }}={{ o.value }}
+{% endfor %}
+directory={{ input_dir }}
+
+{% for method in fio_jobs[item.0.key]['rw'] %}
+### {{ job }} ###
+[{{ job }}]
+rw={{ method }}
+bs={{ job }}
+{% for op in item.0.value | dict2items %}
+{% if op.key != 'rw' %}
+{{ op.key }}{{ "=" ~ op.value if op.value }}
+{% endif %}
+{% endfor %}{# job options loop #}
+write_bw_log={{ fio_output_dir }}/${FIO_JOB_DATE}/{{ input_dir_sanitised }}/{{ job }}/{{ job }}_{{ method }}_bw.results
+write_iops_log={{ fio_output_dir }}/${FIO_JOB_DATE}/{{ input_dir_sanitised }}/{{ job }}/{{ job }}_{{ method }}_iops.results
+write_lat_log={{ fio_output_dir }}/${FIO_JOB_DATE}/{{ input_dir_sanitised }}/{{ job }}/{{ job }}_{{ method }}_lat.results
+
+{% endfor %}{# job method loop #}
