@@ -14,7 +14,7 @@ rw={{ method }}
 bs={{ job }}
 {% for op in item.0.value | dict2items %}
 {% if op.key != 'rw' %}
-{{ op.key }}{{ "=" ~ op.value if op.value }}
+{{ op.key }}{{ "=" ~ op.value if op.value else "" }}
 {% endif %}
 {% endfor %}{# job options loop #}
 write_bw_log={{ fio_output_dir }}/${FIO_JOB_DATE}/{{ input_dir_sanitised }}/{{ job }}/{{ job }}_{{ method }}_bw.results
