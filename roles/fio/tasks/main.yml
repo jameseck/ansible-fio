@@ -50,7 +50,7 @@
 - name: Fetch fio results
   fetch:
     src: "{{ fio_output_dir }}/fio_results.tar.gz"
-    dest: "/tmp/{{ inventory_hostname }}-fio_results.tar.gz"
+    dest: "{{ fio_fetch_dir }}/{{ inventory_hostname }}-fio_results.tar.gz"
     flat: yes
     mode: pull
   tags:
