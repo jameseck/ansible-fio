@@ -19,6 +19,6 @@ fio "{{ fio_output_dir }}/job_{{ input_dir_sanitised }}_{{ job }}.fio" \
   --output "{{ fio_output_dir }}/${FIO_JOB_DATE}/{{ input_dir_sanitised }}/{{ job }}/{{ job }}_fio.log"
 #  --output-format=json \
 
-rm -f "{{ input_dir_sanitised }}/{{ job }}.*"
+rm -f "{{ item }}/{{ job }}.*"
 
 {% endfor %}
