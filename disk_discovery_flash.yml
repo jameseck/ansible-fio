@@ -1,0 +1,19 @@
+---
+- hosts: clients
+  tasks:
+  - name: Get a list of block devices (excludes loop and child devices)
+    command: lsblk -n --output NAME --nodeps --exclude 7
+    register: __lsblk_out
+
+  - name: Check if disk is free - ERROR expected - don't panic
+    command: "pvcreate --test /dev/{{ item }}"
+    ignore_errors: yes
+    register: __pv_status
+    when: 'ansible_devices[item].rotational == "0"' # We exclude rotational here
+    loop: "{{ __lsblk_out.stdout_lines }}"
+
+  - name: Populate host_disks list with empty disks
+    set_fact:
+      host_disks: "{{ host_disks | default([]) + ['/dev/' + item.item] }}"
+    when: item is not skipped and item.rc == 0
+    loop: "{{ __pv_status.results }}"

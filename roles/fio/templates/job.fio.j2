@@ -1,24 +1,19 @@
 {% set job = item.0.key %}
-{% set input_dir = item.1 %}
-{% set input_dir_sanitised = item.1 | regex_replace('^\\/', '') | regex_replace('/', '_') %}
+{% set input_device = item.1 %}
+{% set input_device_sanitised = item.1 | regex_replace('^\\/', '') | regex_replace('/', '_') %}
+{% if 'iodepth' in fio_jobs[item.0.key] %}{% set iodepth = fio_jobs[item.0.key]['iodepth'] %}{% else %}{% set iodepth = fio_global_options['iodepth'] %}{% endif %}
+{% if 'numjobs' in fio_jobs[item.0.key] %}{% set numjobs = fio_jobs[item.0.key]['numjobs'] %}{% else %}{% set numjobs = fio_global_options['numjobs'] %}{% endif %}
 [global]
 {% for o in fio_global_options | dict2items %}
-{{ o.key }}={{ o.value }}
+{{ o.key }}{{ "=" ~ o.value if o.value|string != "None" else "" }}
 {% endfor %}
-directory={{ input_dir }}
+filename={{ input_device }}
 
-{% for method in fio_jobs[item.0.key]['rw'] %}
 ### {{ job }} ###
 [{{ job }}]
-rw={{ method }}
-bs={{ job }}
 {% for op in item.0.value | dict2items %}
-{% if op.key != 'rw' %}
-{{ op.key }}{{ "=" ~ op.value if op.value else "" }}
-{% endif %}
+{{ op.key }}{{ "=" ~ op.value if op.value|string != "None" else "" }}
 {% endfor %}{# job options loop #}
-write_bw_log={{ fio_output_dir }}/${FIO_JOB_DATE}/{{ input_dir_sanitised }}/{{ job }}/{{ job }}_{{ method }}_bw.results
-write_iops_log={{ fio_output_dir }}/${FIO_JOB_DATE}/{{ input_dir_sanitised }}/{{ job }}/{{ job }}_{{ method }}_iops.results
-write_lat_log={{ fio_output_dir }}/${FIO_JOB_DATE}/{{ input_dir_sanitised }}/{{ job }}/{{ job }}_{{ method }}_lat.results
-
-{% endfor %}{# job method loop #}
+write_bw_log={{ fio_output_dir }}/${FIO_JOB_DATE}/{{ input_device_sanitised }}/{{ job }}/{{ fio_jobs[item.0.key]['rw'] }}-iodepth-{{ iodepth }}-numjobs-{{ numjobs }}
+write_iops_log={{ fio_output_dir }}/${FIO_JOB_DATE}/{{ input_device_sanitised }}/{{ job }}/{{ fio_jobs[item.0.key]['rw'] }}-iodepth-{{ iodepth }}-numjobs-{{ numjobs }}
+write_lat_log={{ fio_output_dir }}/${FIO_JOB_DATE}/{{ input_device_sanitised }}/{{ job }}/{{ fio_jobs[item.0.key]['rw'] }}-iodepth-{{ iodepth }}-numjobs-{{ numjobs }}

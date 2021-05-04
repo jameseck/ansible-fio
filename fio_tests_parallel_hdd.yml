@@ -1,0 +1,48 @@
+---
+- import_playbook: disk_discovery_hdd.yml
+
+- hosts: clients
+  vars:
+    fio_fetch_dir: /tmp/fioresults/fio_parallel_hdd # This should be unique for each run
+    fio_global_options:
+      ioengine: libaio
+      direct: 1
+      time_based: 1
+      numjobs: "{{ ansible_processor_vcpus }}"
+      log_avg_msec: 1000
+      sync: 0
+      buffered: 0
+      startdelay: 15
+      ramp_time: 60s
+      rwmixread: 70
+      fadvise_hint: 0
+      size: 4g
+      runtime: 10s # TODO: Change this to 300s
+      norandommap: 1
+      group_reporting:
+      iodepth: "{{ (host_disks | length) * 16 }}"
+
+    fio_jobs:
+      file-io-8:
+        blocksize: 8k
+        rw: randrw
+        stonewall:
+      file-io-512:
+        blocksize: 512k
+        rw: randrw
+        stonewall:
+      file-io-MixedIOsize:
+        rw: randrw
+        bssplit: "8k/10:32k/10:64k/30:128k/30:256k/10:512k/10"
+        stonewall:
+      seq-io-512-read:
+        blocksize: 512k
+        rw: read
+        stonewall:
+  become: yes
+  pre_tasks:
+  - name: Set fio_devices
+    set_fact:
+      fio_devices: "{{ host_disks | join(':') }}"
+  roles:
+  - fio

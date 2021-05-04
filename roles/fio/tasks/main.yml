@@ -16,26 +16,26 @@
 - name: Generate fio job templates
   template:
     src: job.fio.j2
-    dest: "{{ fio_output_dir }}/job_{{ item.1 | regex_replace('\\/', '') | regex_replace('/', '_') }}_{{ item.0.key }}.fio"
-  loop: "{{ fio_jobs | dict2items | product(fio_input_dirs) | list }}"
+    dest: "{{ fio_output_dir }}/job_{{ item.1 | regex_replace('^\\/', '') | regex_replace('/', '_') }}_{{ item.0.key }}.fio"
+  loop: "{{ fio_jobs | dict2items | product([fio_devices]|flatten) | list }}"
   tags:
   - gen
 
 - name: Create fio launch script
   template:
     src: launch_fio.sh.j2
-    dest: "{{ fio_output_dir }}/{{ item | regex_replace('\\/', '') | regex_replace('/', '_') }}-launch_fio.sh"
+    dest: "{{ fio_output_dir }}/{{ item | regex_replace('^\\/', '') | regex_replace('/', '_') }}-launch_fio.sh"
     mode: 0755
-  loop: "{{ fio_input_dirs }}"
+  loop: "{{ [fio_devices] | flatten }}"
   tags:
   - gen
 
 - name: Launch fio
-  command: "./{{ item | regex_replace('\\/', '') | regex_replace('/', '_') }}-launch_fio.sh"
+  command: "./{{ item | regex_replace('^\\/', '') | regex_replace('/', '_') }}-launch_fio.sh"
   args:
     chdir: "{{ fio_output_dir }}"
   changed_when: true
-  loop: "{{ fio_input_dirs }}"
+  loop: "{{ [fio_devices] | flatten }}"
   tags:
   - fio_launch
 
@@ -46,6 +46,12 @@
     exclude_path: "{{ fio_output_dir }}/fio_results.tar.gz"
   tags:
   - results
+
+- name: Ensure fio_fetch_dir exists
+  file:
+    name: "{{ fio_fetch_dir }}"
+    state: directory
+    recurse: yes
 
 - name: Fetch fio results
   fetch:

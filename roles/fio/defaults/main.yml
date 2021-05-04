@@ -4,7 +4,7 @@ packages:
 - tar
 
 # A list of directories on the test host that fio jobs will be run against
-fio_input_dirs:
+fio_devices:
 - /tmptest
 
 # Where to store the fio logs on the test host we're running fio on
@@ -14,17 +14,16 @@ fio_output_dir: /tmp/fio_tests
 # will be fetched and stored in this location
 fio_fetch_dir: /tmp/fio_tests
 
-fio_job_time: 10m
-fio_job_size: 30g
-fio_iodepth: 64
-fio_ramp_time: 3m
-
 fio_global_options:
   ioengine: libaio
   direct: 1
   time_based: 1
-  numjobs: 1
+  numjobs: "{{ ansible_processor_vcpus }}"
   log_avg_msec: 5
+  iodepth: 16
+  size: 4g
+  ramp_time: 3m
+  runtime: 10m
 
 # fio_jobs dict by blocksize
 fio_jobs:
@@ -34,9 +33,6 @@ fio_jobs:
     - write
     - randread
     - randwrite
-    runtime: "{{ fio_job_time }}"
-    size: "{{ fio_job_size }}"
-    iodepth: "{{ fio_iodepth }}"
     stonewall:
   64k:
     rw:
@@ -44,9 +40,6 @@ fio_jobs:
     - write
     - randread
     - randwrite
-    runtime: "{{ fio_job_time }}"
-    size: "{{ fio_job_size }}"
-    iodepth: "{{ fio_iodepth }}"
     stonewall:
   1m:
     rw:
@@ -54,7 +47,4 @@ fio_jobs:
     - write
     - randread
     - randwrite
-    runtime: "{{ fio_job_time }}"
-    size: "{{ fio_job_size }}"
-    iodepth: "{{ fio_iodepth }}"
     stonewall:

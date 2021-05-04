@@ -1,4 +1,4 @@
-{% set input_dir_sanitised = item | regex_replace('^\\/', '') | regex_replace('/', '_') %}
+{% set input_device_sanitised = item | regex_replace('^\\/', '') | regex_replace('/', '_') %}
 #!/bin/bash
 
 dropcaches() {
@@ -8,17 +8,14 @@ dropcaches() {
 export FIO_JOB_DATE=$(date +'%Y-%m-%d_%H:%M')
 
 {% for job in fio_jobs %}
-mkdir -p "{{ fio_output_dir }}/${FIO_JOB_DATE}/{{ input_dir_sanitised }}/{{ job }}"
+mkdir -p "{{ fio_output_dir }}/${FIO_JOB_DATE}/{{ input_device_sanitised }}/{{ job }}"
 echo
-echo "### Starting fio tests from {{ fio_output_dir }}/job_{{ input_dir_sanitised }}_{{ job }}.fio"
+echo "### Starting fio tests from {{ fio_output_dir }}/job_{{ input_device_sanitised }}_{{ job }}.fio"
 echo
 
 dropcaches
 
-fio "{{ fio_output_dir }}/job_{{ input_dir_sanitised }}_{{ job }}.fio" \
-  --output "{{ fio_output_dir }}/${FIO_JOB_DATE}/{{ input_dir_sanitised }}/{{ job }}/{{ job }}_fio.log"
-#  --output-format=json \
-
-rm -f "{{ item }}/{{ job }}.*"
+fio "{{ fio_output_dir }}/job_{{ input_device_sanitised }}_{{ job }}.fio" \
+  --output "{{ fio_output_dir }}/${FIO_JOB_DATE}/{{ input_device_sanitised }}/{{ job }}/{{ job }}_fio.log"
 
 {% endfor %}

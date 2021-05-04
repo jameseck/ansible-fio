@@ -1,0 +1,44 @@
+---
+- import_playbook: disk_discovery_flash.yml
+
+- hosts: clients
+  vars:
+    fio_fetch_dir: /tmp/fioresults/fio_parallel_flash # This should be unique for each run
+    fio_global_options:
+      ioengine: libaio
+      direct: 1
+      time_based: 1
+      numjobs: "{{ ansible_processor_vcpus }}"
+      log_avg_msec: 1000
+      sync: 0
+      buffered: 0
+      startdelay: 15
+      ramp_time: 60s
+      rwmixread: 70
+      fadvise_hint: 0
+      size: 4g
+      runtime: 10s # TODO: Change this to 300s
+      norandommap: 1
+      group_reporting:
+      iodepth: "{{ (host_disks | length) * 32 }}"
+
+    fio_jobs:
+      file-io-4-read:
+        blocksize: 4k
+        rw: randread
+        stonewall:
+      file-io-4-write:
+        blocksize: 4k
+        rw: randwrite
+        stonewall:
+      file-io-4-readwrite:
+        blocksize: 4k
+        rw: randrw
+        stonewall:
+  become: yes
+  pre_tasks:
+  - name: Set fio_devices
+    set_fact:
+      fio_devices: "{{ host_disks | join(':') }}"
+  roles:
+  - fio
