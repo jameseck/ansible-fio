@@ -1,5 +1,5 @@
 ---
-- name: "Ensure required packages {{ packages | join(',') }} are installed"
+- name: "Ensure required packages ({{ packages | join(',') }}) are installed"
   package:
     name: "{{ packages }}"
     state: present
@@ -30,7 +30,7 @@
   tags:
   - gen
 
-- name: Run fio scripts
+- name: Launch fio
   command: "./{{ item | regex_replace('\\/', '') | regex_replace('/', '_') }}-launch_fio.sh"
   args:
     chdir: "{{ fio_output_dir }}"
@@ -39,7 +39,7 @@
   tags:
   - fio_launch
 
-- name: Tar up the fio results
+- name: Tar up fio results
   archive:
     path: "{{ fio_output_dir }}"
     dest: "{{ fio_output_dir }}/fio_results.tar.gz"
